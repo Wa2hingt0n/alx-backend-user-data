@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """ Defines a function 'filter_datum' """
 import logging
+import mysql.connector
+from os import getenv
 import re
 from typing import List
 
@@ -35,6 +37,24 @@ def get_logger() -> logging.Logger:
     logger.propagate = False
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(RedactingFormatter(PII_FIELDS))
+
+
+def get_db() -> mysql.connector.connection.MySQLConnection:
+    """ Connects to a MySQL database and returns a connector to the database"""
+    hostname = getenv("PERSONAL_DATA_DB_HOST")
+    db = getenv("PERSONAL_DATA_DB_NAME")
+    usr_name = getenv("PERSONAL_DATA_DB_USERNAME")
+    passwrd = getenv("PERSONAL_DATA_DB_PASSWORD")
+    connector_variables = {"host": hostname,
+                           "database": db,
+                           "username": usr_name,
+                           "password": passwrd
+    }
+    try:
+        connection = mysql.connector.connect(**connector_variables)
+        return connection
+    except mysql.connector.Error as e:
+        print("Error: ", e)
 
 
 class RedactingFormatter(logging.Formatter):
