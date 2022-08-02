@@ -37,6 +37,8 @@ def get_logger() -> logging.Logger:
     logger.propagate = False
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(RedactingFormatter(PII_FIELDS))
+    logger.addHandler(stream_handler)
+    return logger
 
 
 def get_db() -> mysql.connector.connection.MySQLConnection:
@@ -48,13 +50,30 @@ def get_db() -> mysql.connector.connection.MySQLConnection:
     connector_variables = {"host": hostname,
                            "database": db,
                            "username": usr_name,
-                           "password": passwrd
-    }
+                           "password": passwrd}
     try:
         connection = mysql.connector.connect(**connector_variables)
         return connection
     except mysql.connector.Error as e:
         print("Error: ", e)
+
+
+def main() -> None:
+    """ Script main function """
+    columns = ["name", "email", "phone", "ssn",
+               "password", "ip", "last_login", "user_agent"]
+    db = get_db()
+    cursor = db.cursor()
+    cursor.execute("SELECT * FROM users;")
+    logger = get_logger()
+    for row in cursor:
+        series = map(lambda x: "{}={}".format(x[0], x[1]), zip(columns, row))
+        log_message = "{}".format("; ".join(list(series)))
+        log_record = logging.LogRecord(
+            "user_data", logging.INFO, None, None, log_message, None, None)
+        logger.handle(log_record)
+    cursor.close()
+    db.close()
 
 
 class RedactingFormatter(logging.Formatter):
@@ -76,3 +95,7 @@ class RedactingFormatter(logging.Formatter):
                                      formatted_record,
                                      self.SEPARATOR)
         return logged_record
+
+
+if __name__ == "__main__":
+    main()
