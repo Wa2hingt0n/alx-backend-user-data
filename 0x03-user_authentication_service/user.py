@@ -1,4 +1,4 @@
-#!/usr/bin/env pyhton3
+#!/usr/bin/env python3
 """ Creates an SQLAlchemy model named 'User' """
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
