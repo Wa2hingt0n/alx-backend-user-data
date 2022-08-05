@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """ Authentication script """
 import bcrypt
+import uuid
 from db import DB
 from sqlalchemy.orm.exc import NoResultFound
 from user import User
@@ -11,6 +12,12 @@ def _hash_password(password: str) -> bytes:
     passwrd = password.encode()
     hashed = bcrypt.hashpw(passwrd, bcrypt.gensalt())
     return hashed
+
+
+def _generate_uuid() -> str:
+    """ Returns a string representation of a new uuid """
+    new_id = uuid.uuid4()
+    return str(new_id)
 
 
 class Auth:
