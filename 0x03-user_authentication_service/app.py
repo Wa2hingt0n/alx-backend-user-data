@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """ Creates a flask app """
-from flask import Flask, jsonify, request, abort
+from flask import Flask, jsonify, request, abort, redirect
 from auth import Auth
 
 
@@ -39,6 +39,28 @@ def login():
     response = jsonify({"email": email, "message": "logged in"})
     response.set_cookie("session_id", session_id)
     return response
+
+
+@app.route("/sessions", strict_slashes=False, methods=["DELETE"])
+def logout():
+    """ Destroys an existing session and redirects the user to GET / """
+    session_id = request.cookies.get("session_id")
+    user = AUTH.get_user_from_session_id(session_id)
+    if user:
+        AUTH.destroy_session(user.id)
+        return redirect("/")
+    else:
+        abort(403)
+
+
+@app.route("/profile", strict_slashes=False, methods=["GET"])
+def profile():
+    """ Retrieves a user profile from an existing session """
+    session_id = request.cookies.get("session_id")
+    user = AUTH.get_user_from_session_id(session_id)
+    if user is None:
+        abort(403)
+    return jsonify({"email": user.email}), 200
 
 
 if __name__ == "__main__":
