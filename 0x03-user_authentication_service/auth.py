@@ -4,6 +4,7 @@ import bcrypt
 import uuid
 from db import DB
 from sqlalchemy.orm.exc import NoResultFound
+from typing import Union
 from user import User
 
 
@@ -47,7 +48,7 @@ class Auth:
             return False
         return False
 
-    def create_session(self, email: str) -> str:
+    def create_session(self, email: str) -> Union[str, None]:
         """ Returns a session uuid string """
         try:
             user = self._db.find_user_by(email=email)
@@ -59,7 +60,7 @@ class Auth:
             return None
         return None
 
-    def get_user_from_session_id(self, session_id: str) -> User:
+    def get_user_from_session_id(self, session_id: str) -> Union[User, None]:
         """ Retrieves a user using the session id """
         if session_id:
             try:
